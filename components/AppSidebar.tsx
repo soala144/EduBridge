@@ -28,6 +28,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getCurrentUser, type User as DBUser } from "@/lib/db";
+import Image from "next/image";
 
 const menuItems = [
   { title: "Dashboard", icon: Home, url: "/dashboard" },
@@ -63,9 +64,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="border-b px-6 py-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-[#261CC1] flex items-center justify-center">
-            <span className="text-white font-bold text-lg">EB</span>
-          </div>
+         <Image src="/edu-bridge-logo.jpg" width={20} height={10} alt="i"/>
           <div>
             <h2 className="font-semibold text-lg">EduBridge</h2>
             <p className="text-xs text-muted-foreground">UNIPORT</p>
