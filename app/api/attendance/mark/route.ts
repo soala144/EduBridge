@@ -20,38 +20,53 @@ export async function POST(request: NextRequest) {
 
     console.log("Creating attendance with sessionKey:", sessionKey);
 
-    const attendance = await prisma.attendance.upsert({
+    // Check if attendance already exists
+    const existing = await prisma.attendance.findFirst({
       where: {
-        sessionKey_userEmail: {
-          sessionKey,
-          userEmail,
-        },
-      },
-      update: {
-        present: true,
-        markedAt: new Date(),
-        userName,
-        matNumber: matNumber || null,
-      },
-      create: {
-        courseCode,
-        sessionDate: date,
-        userName,
-        userEmail,
-        matNumber: matNumber || null,
         sessionKey,
-        present: true,
+        userEmail,
       },
     });
 
-    console.log("Attendance marked successfully:", attendance.id);
+    let attendance;
+
+    if (existing) {
+      // Update existing attendance
+      attendance = await prisma.attendance.update({
+        where: {
+          id: existing.id,
+        },
+        data: {
+          present: true,
+          markedAt: new Date(),
+          userName,
+          matNumber: matNumber || null,
+        },
+      });
+      console.log("Attendance updated:", attendance.id);
+    } else {
+      // Create new attendance
+      attendance = await prisma.attendance.create({
+        data: {
+          courseCode,
+          sessionDate: date,
+          userName,
+          userEmail,
+          matNumber: matNumber || null,
+          sessionKey,
+          present: true,
+        },
+      });
+      console.log("Attendance created:", attendance.id);
+    }
 
     return NextResponse.json({ success: true, attendance });
   } catch (error) {
     console.error("Error marking attendance:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorStack = error instanceof Error ? error.stack : "";
     return NextResponse.json(
-      { error: "Failed to mark attendance", details: errorMessage },
+      { error: "Failed to mark attendance", details: errorMessage, stack: errorStack },
       { status: 500 }
     );
   }

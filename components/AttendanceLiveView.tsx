@@ -44,6 +44,9 @@ export function AttendanceLiveView({
         const data = await response.json();
         setAttendees(data.attendees);
         setLastUpdate(new Date());
+      } else {
+        const error = await response.json();
+        console.error("Error response:", error);
       }
     } catch (error) {
       console.error("Error fetching attendees:", error);
@@ -56,6 +59,7 @@ export function AttendanceLiveView({
     fetchAttendees();
     const interval = setInterval(fetchAttendees, 3000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseCode, sessionDate]);
 
   const handleSimulateDummies = async () => {

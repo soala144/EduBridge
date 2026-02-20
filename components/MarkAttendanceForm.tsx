@@ -176,7 +176,7 @@ export function MarkAttendanceForm() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                Matric Number (Optional)
+                Matric Number
               </label>
               <Input
                 placeholder="e.g., 2020/123456"
