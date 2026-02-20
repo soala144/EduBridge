@@ -24,15 +24,16 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { mockUser } from "@/lib/mock-data";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Image from "next/image";
+import { useEffect, useState } from "react";
+import { getCurrentUser, type User as DBUser } from "@/lib/db";
 
 const menuItems = [
   { title: "Dashboard", icon: Home, url: "/dashboard" },
   { title: "My Courses", icon: BookOpen, url: "/courses" },
   { title: "Attendance", icon: Calendar, url: "/attendance" },
+  { title: "Reports", icon: FileText, url: "/reports" },
   { title: "Alerts", icon: Bell, url: "/alerts" },
   { title: "Library", icon: Library, url: "/library" },
   { title: "Assignments", icon: FileText, url: "/assignments" },
@@ -46,15 +47,28 @@ const bottomItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const [currentUser, setCurrentUser] = useState<DBUser | null>(null);
+
+  useEffect(() => {
+    async function loadUser() {
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+    }
+    loadUser();
+  }, []);
+
+  if (!currentUser) return null;
 
   return (
     <Sidebar>
       <SidebarHeader className="border-b px-6 py-4">
         <div className="flex items-center gap-3">
-         <Image src="/edu-bridge-logo.jpg" alt="" width={20} height={10}/>
+          <div className="h-10 w-10 rounded-lg bg-[#261CC1] flex items-center justify-center">
+            <span className="text-white font-bold text-lg">EB</span>
+          </div>
           <div>
             <h2 className="font-semibold text-lg">EduBridge</h2>
-              
+            <p className="text-xs text-muted-foreground">UNIPORT</p>
           </div>
         </div>
       </SidebarHeader>
@@ -122,18 +136,18 @@ export function AppSidebar() {
         <div className="px-4 py-3 border-t">
           <div className="flex items-center gap-3">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={mockUser.avatar} />
+              <AvatarImage src="" />
               <AvatarFallback className="bg-[#261CC1] text-white">
-                {mockUser.name
+                {currentUser.name
                   .split(" ")
-                  .map((n) => n[0])
+                  .map((n: string) => n[0])
                   .join("")}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{mockUser.name}</p>
+              <p className="text-sm font-medium truncate">{currentUser.name}</p>
               <p className="text-xs text-muted-foreground capitalize">
-                {mockUser.role.toLowerCase().replace("_", " ")}
+                {currentUser.role.toLowerCase().replace("_", " ")}
               </p>
             </div>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Menu, Moon, Sun } from "lucide-react";
+import { Bell, Menu, Moon, Sun, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -11,20 +11,60 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useSidebar } from "@/components/ui/sidebar";
-import { mockUser } from "@/lib/mock-data";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { getCurrentUser, setCurrentUser, db, type User } from "@/lib/db";
 
 export function Header() {
   const { toggleSidebar } = useSidebar();
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [currentUser, setCurrentUserState] = useState<User | null>(null);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    async function loadUser() {
+      const user = await getCurrentUser();
+      setCurrentUserState(user);
+      if (!user) {
+        router.push("/login");
+      }
+      const users = await db.users.toArray();
+      setAllUsers(users);
+    }
+    loadUser();
+  }, [router]);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
     document.documentElement.classList.toggle("dark");
   };
+
+  const handleUserSwitch = async (email: string) => {
+    const user = allUsers.find((u) => u.email === email);
+    if (user) {
+      await setCurrentUser(user);
+      setCurrentUserState(user);
+      window.location.reload();
+    }
+  };
+
+  const handleLogout = async () => {
+    await setCurrentUser(null);
+    router.push("/login");
+  };
+
+  if (!currentUser) return null;
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
@@ -39,7 +79,9 @@ export function Header() {
         </Button>
 
         <div className="flex-1">
-          <h1 className="text-lg font-semibold">Welcome back, {mockUser.name.split(" ")[0]}!</h1>
+          <h1 className="text-lg font-semibold">
+            Welcome back, {currentUser.name.split(" ")[0]}!
+          </h1>
           <p className="text-sm text-muted-foreground">
             {new Date().toLocaleDateString("en-US", {
               weekday: "long",
@@ -67,37 +109,16 @@ export function Header() {
                   variant="destructive"
                   className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
                 >
-                  3
+                  0
                 </Badge>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80">
               <DropdownMenuLabel>Notifications</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <div className="flex flex-col gap-1">
-                  <p className="text-sm font-medium">New assignment posted</p>
-                  <p className="text-xs text-muted-foreground">
-                    CSC 301 - Due in 3 days
-                  </p>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <div className="flex flex-col gap-1">
-                  <p className="text-sm font-medium">Class alert</p>
-                  <p className="text-xs text-muted-foreground">
-                    CSC 305 - Venue changed to LT2
-                  </p>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <div className="flex flex-col gap-1">
-                  <p className="text-sm font-medium">Attendance marked</p>
-                  <p className="text-xs text-muted-foreground">
-                    GST 301 - Present
-                  </p>
-                </div>
-              </DropdownMenuItem>
+              <div className="p-4 text-center text-sm text-muted-foreground">
+                No new notifications
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -105,29 +126,41 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="gap-2">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={mockUser.avatar} />
+                  <AvatarImage src="" />
                   <AvatarFallback className="bg-[#261CC1] text-white">
-                    {mockUser.name
+                    {currentUser.name
                       .split(" ")
                       .map((n) => n[0])
                       .join("")}
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden md:flex flex-col items-start">
-                  <span className="text-sm font-medium">{mockUser.name}</span>
+                  <span className="text-sm font-medium">{currentUser.name}</span>
                   <span className="text-xs text-muted-foreground capitalize">
-                    {mockUser.role.toLowerCase().replace("_", " ")}
+                    {currentUser.role.toLowerCase().replace("_", " ")}
                   </span>
                 </div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-64">
+              <DropdownMenuLabel>Switch User (Demo)</DropdownMenuLabel>
+              <div className="px-2 py-2">
+                <Select value={currentUser.email} onValueChange={handleUserSwitch}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allUsers.map((user) => (
+                      <SelectItem key={user.email} value={user.email}>
+                        {user.name} ({user.role})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
+              <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                <LogOut className="h-4 w-4 mr-2" />
                 Log out
               </DropdownMenuItem>
             </DropdownMenuContent>

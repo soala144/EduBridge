@@ -1,11 +1,47 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { StatCard } from "@/components/StatCard";
-import { CourseCard } from "@/components/CourseCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Calendar, FileText, TrendingUp, Bell } from "lucide-react";
-import { mockCourses } from "@/lib/mock-data";
+import { Button } from "@/components/ui/button";
+import { BookOpen, Calendar, FileText, TrendingUp, Bell, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { QRGenerator } from "@/components/QRGenerator";
+import { QRScanner } from "@/components/QRScanner";
+import { AttendanceLiveView } from "@/components/AttendanceLiveView";
+import { UserSwitcher } from "@/components/UserSwitcher";
+import { getCurrentUser, type MockUser } from "@/lib/mock-users";
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<MockUser | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const courseCode = "CSC101";
+  const sessionDate = new Date().toISOString().split("T")[0];
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    setCurrentUser(user);
+  }, []);
+
+  if (!mounted || !currentUser) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  const canManage =
+    currentUser.role === "LECTURER" || currentUser.role === "COURSE_REP";
+  const isStudent = currentUser.role === "STUDENT";
+
   return (
     <div className="space-y-6">
       <div>
@@ -14,6 +50,27 @@ export default function DashboardPage() {
           Your academic overview at a glance
         </p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Current User</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Name</p>
+              <p className="text-lg font-semibold">{currentUser.name}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Role</p>
+              <Badge variant="secondary" className="text-sm">
+                {currentUser.role}
+              </Badge>
+            </div>
+            <UserSwitcher />
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -36,136 +93,26 @@ export default function DashboardPage() {
         />
         <StatCard
           title="Enrolled Courses"
-          value={mockCourses.length}
+          value={2}
           icon={BookOpen}
           description="This semester"
         />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-[#261CC1]" />
-              Recent Alerts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[
-                {
-                  course: "CSC 301",
-                  message: "Class moved to LT2 tomorrow",
-                  time: "2 hours ago",
-                  priority: "high",
-                },
-                {
-                  course: "CSC 305",
-                  message: "New lecture notes uploaded",
-                  time: "5 hours ago",
-                  priority: "medium",
-                },
-                {
-                  course: "GST 301",
-                  message: "Assignment deadline extended",
-                  time: "1 day ago",
-                  priority: "low",
-                },
-              ].map((alert, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-3 pb-3 border-b last:border-0 last:pb-0"
-                >
-                  <Badge
-                    variant={
-                      alert.priority === "high"
-                        ? "destructive"
-                        : alert.priority === "medium"
-                        ? "default"
-                        : "secondary"
-                    }
-                    className="mt-1"
-                  >
-                    {alert.course}
-                  </Badge>
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium">{alert.message}</p>
-                    <p className="text-xs text-muted-foreground">{alert.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-[#261CC1]" />
-              Upcoming Assignments
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[
-                {
-                  course: "CSC 301",
-                  title: "Algorithm Analysis Report",
-                  dueDate: "Due in 2 days",
-                  status: "pending",
-                },
-                {
-                  course: "CSC 305",
-                  title: "Database Design Project",
-                  dueDate: "Due in 5 days",
-                  status: "in-progress",
-                },
-                {
-                  course: "GST 301",
-                  title: "Business Plan Presentation",
-                  dueDate: "Due in 1 week",
-                  status: "pending",
-                },
-              ].map((assignment, i) => (
-                <div
-                  key={i}
-                  className="flex items-start justify-between pb-3 border-b last:border-0 last:pb-0"
-                >
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">{assignment.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {assignment.course}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <Badge
-                      variant={
-                        assignment.status === "in-progress"
-                          ? "default"
-                          : "secondary"
-                      }
-                    >
-                      {assignment.status === "in-progress"
-                        ? "In Progress"
-                        : "Pending"}
-                    </Badge>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {assignment.dueDate}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       <div>
-        <h3 className="text-xl font-semibold mb-4">My Courses</h3>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {mockCourses.map((course) => (
-            <CourseCard key={course.id} course={course} />
-          ))}
+        <h3 className="text-xl font-semibold mb-4">Quick Attendance - {courseCode}</h3>
+        <div className="grid gap-6 md:grid-cols-2">
+          {canManage && (
+            <>
+              <QRGenerator courseCode={courseCode} />
+              <AttendanceLiveView
+                courseCode={courseCode}
+                sessionDate={sessionDate}
+              />
+            </>
+          )}
+
+          {isStudent && <QRScanner />}
         </div>
       </div>
     </div>
