@@ -5,20 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Settings } from "lucide-react";
-import { getCurrentUser, type MockUser } from "@/lib/mock-users";
+import { useUser } from "@/contexts/UserContext";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
-  const [currentUser, setCurrentUser] = useState<MockUser | null>(null);
+  const { currentUser, isLoading } = useUser();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const user = getCurrentUser();
-    setCurrentUser(user);
   }, []);
 
-  if (!mounted || !currentUser) {
+  if (!mounted || isLoading || !currentUser) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p>Loading...</p>

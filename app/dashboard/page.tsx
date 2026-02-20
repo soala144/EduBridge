@@ -4,19 +4,15 @@ import { useEffect, useState } from "react";
 import { StatCard } from "@/components/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { BookOpen, Calendar, FileText, TrendingUp, Bell, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { BookOpen, Calendar, FileText, TrendingUp } from "lucide-react";
 import { QRGenerator } from "@/components/QRGenerator";
 import { QRScannerSimple } from "@/components/QRScannerSimple";
 import { AttendanceLiveView } from "@/components/AttendanceLiveView";
 import { UserSwitcher } from "@/components/UserSwitcher";
-import { getCurrentUser, type MockUser } from "@/lib/mock-users";
+import { useUser } from "@/contexts/UserContext";
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<MockUser | null>(null);
+  const { currentUser, isLoading } = useUser();
   const [mounted, setMounted] = useState(false);
   const courseCode = "CSC101";
   const sessionDate = new Date().toISOString().split("T")[0];
@@ -25,12 +21,7 @@ export default function DashboardPage() {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    const user = getCurrentUser();
-    setCurrentUser(user);
-  }, []);
-
-  if (!mounted || !currentUser) {
+  if (!mounted || isLoading || !currentUser) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p>Loading...</p>

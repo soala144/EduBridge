@@ -6,22 +6,20 @@ import { QRScannerSimple } from "@/components/QRScannerSimple";
 import { AttendanceLiveView } from "@/components/AttendanceLiveView";
 import { UserSwitcher } from "@/components/UserSwitcher";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getCurrentUser, type MockUser } from "@/lib/mock-users";
+import { useUser } from "@/contexts/UserContext";
 import { Calendar } from "lucide-react";
 
 export default function AttendancePage() {
-  const [currentUser, setCurrentUser] = useState<MockUser | null>(null);
+  const { currentUser, isLoading } = useUser();
   const [mounted, setMounted] = useState(false);
   const courseCode = "CSC101";
   const sessionDate = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     setMounted(true);
-    const user = getCurrentUser();
-    setCurrentUser(user);
   }, []);
 
-  if (!mounted || !currentUser) {
+  if (!mounted || isLoading || !currentUser) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p>Loading...</p>

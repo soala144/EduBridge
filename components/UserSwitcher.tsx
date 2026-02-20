@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -8,35 +7,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MOCK_USERS, getCurrentUser, setCurrentUser, type MockUser } from "@/lib/mock-users";
+import { MOCK_USERS } from "@/lib/mock-users";
+import { useUser } from "@/contexts/UserContext";
 
-interface UserSwitcherProps {
-  onUserChange?: (user: MockUser) => void;
-}
+export function UserSwitcher() {
+  const { currentUser, switchUser } = useUser();
 
-export function UserSwitcher({ onUserChange }: UserSwitcherProps) {
-  const [currentUser, setCurrentUserState] = useState<MockUser | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    const user = getCurrentUser();
-    setCurrentUserState(user);
-  }, []);
+  if (!currentUser) return null;
 
   const handleUserChange = (email: string) => {
-    const user = MOCK_USERS.find((u) => u.email === email);
-    if (user) {
-      setCurrentUser(user);
-      setCurrentUserState(user);
-      if (onUserChange) {
-        onUserChange(user);
-      }
-      window.location.reload();
-    }
+    switchUser(email);
   };
-
-  if (!mounted || !currentUser) return null;
 
   return (
     <div className="space-y-2">

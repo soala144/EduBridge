@@ -26,9 +26,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { getCurrentUser, type User as DBUser } from "@/lib/db";
-import Image from "next/image";
+import { useUser } from "@/contexts/UserContext";
 
 const menuItems = [
   { title: "Dashboard", icon: Home, url: "/dashboard" },
@@ -48,23 +46,17 @@ const bottomItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const [currentUser, setCurrentUser] = useState<DBUser | null>(null);
+  const { currentUser, isLoading } = useUser();
 
-  useEffect(() => {
-    async function loadUser() {
-      const user = await getCurrentUser();
-      setCurrentUser(user);
-    }
-    loadUser();
-  }, []);
-
-  if (!currentUser) return null;
+  if (isLoading || !currentUser) return null;
 
   return (
     <Sidebar>
       <SidebarHeader className="border-b px-6 py-4">
         <div className="flex items-center gap-3">
-         <Image src="/edu-bridge-logo.jpg" width={20} height={10} alt="i"/>
+          <div className="h-10 w-10 rounded-lg bg-[#261CC1] flex items-center justify-center">
+            <span className="text-white font-bold text-lg">EB</span>
+          </div>
           <div>
             <h2 className="font-semibold text-lg">EduBridge</h2>
             <p className="text-xs text-muted-foreground">UNIPORT</p>

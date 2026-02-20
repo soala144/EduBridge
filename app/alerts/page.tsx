@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Bell, Plus, AlertCircle } from "lucide-react";
-import { getCurrentUser, type MockUser } from "@/lib/mock-users";
+import { useUser } from "@/contexts/UserContext";
 import { toast } from "sonner";
 
 const mockAlerts = [
@@ -50,17 +50,15 @@ const mockAlerts = [
 ];
 
 export default function AlertsPage() {
-  const [currentUser, setCurrentUser] = useState<MockUser | null>(null);
+  const { currentUser, isLoading } = useUser();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const user = getCurrentUser();
-    setCurrentUser(user);
   }, []);
 
-  if (!mounted || !currentUser) {
+  if (!mounted || isLoading || !currentUser) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p>Loading...</p>

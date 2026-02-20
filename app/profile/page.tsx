@@ -5,19 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { User } from "lucide-react";
-import { getCurrentUser, type MockUser } from "@/lib/mock-users";
+import { useUser } from "@/contexts/UserContext";
 
 export default function ProfilePage() {
-  const [currentUser, setCurrentUser] = useState<MockUser | null>(null);
+  const { currentUser, isLoading } = useUser();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const user = getCurrentUser();
-    setCurrentUser(user);
   }, []);
 
-  if (!mounted || !currentUser) {
+  if (!mounted || isLoading || !currentUser) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p>Loading...</p>

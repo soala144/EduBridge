@@ -20,29 +20,16 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useSidebar } from "@/components/ui/sidebar";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentUser, setCurrentUser, db, type User } from "@/lib/db";
+import { useUser } from "@/contexts/UserContext";
+import { MOCK_USERS } from "@/lib/mock-users";
 
 export function Header() {
   const { toggleSidebar } = useSidebar();
   const [theme, setTheme] = useState<"light" | "dark">("light");
-  const [currentUser, setCurrentUserState] = useState<User | null>(null);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const { currentUser, switchUser } = useUser();
   const router = useRouter();
-
-  useEffect(() => {
-    async function loadUser() {
-      const user = await getCurrentUser();
-      setCurrentUserState(user);
-      if (!user) {
-        router.push("/login");
-      }
-      const users = await db.users.toArray();
-      setAllUsers(users);
-    }
-    loadUser();
-  }, [router]);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -50,18 +37,12 @@ export function Header() {
     document.documentElement.classList.toggle("dark");
   };
 
-  const handleUserSwitch = async (email: string) => {
-    const user = allUsers.find((u) => u.email === email);
-    if (user) {
-      await setCurrentUser(user);
-      setCurrentUserState(user);
-      window.location.reload();
-    }
+  const handleUserSwitch = (email: string) => {
+    switchUser(email);
   };
 
-  const handleLogout = async () => {
-    await setCurrentUser(null);
-    router.push("/login");
+  const handleLogout = () => {
+    router.push("/");
   };
 
   if (!currentUser) return null;
@@ -150,7 +131,7 @@ export function Header() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {allUsers.map((user) => (
+                    {MOCK_USERS.map((user) => (
                       <SelectItem key={user.email} value={user.email}>
                         {user.name} ({user.role})
                       </SelectItem>

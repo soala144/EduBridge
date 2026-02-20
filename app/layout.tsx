@@ -4,6 +4,7 @@ import "./globals.css";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
+import { UserProvider } from "@/contexts/UserContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,12 +37,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <TooltipProvider>
-          <SidebarProvider>
-            {children}
-            <Toaster position="top-right" />
-          </SidebarProvider>
-        </TooltipProvider>
+        <UserProvider>
+          <TooltipProvider>
+            <SidebarProvider>
+              {children}
+              <Toaster position="top-right" />
+            </SidebarProvider>
+          </TooltipProvider>
+        </UserProvider>
       </body>
     </html>
   );
