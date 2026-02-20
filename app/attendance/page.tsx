@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { QRGenerator } from "@/components/QRGenerator";
-import { QRScanner } from "@/components/QRScanner";
+import { QRScannerSimple } from "@/components/QRScannerSimple";
 import { AttendanceLiveView } from "@/components/AttendanceLiveView";
 import { UserSwitcher } from "@/components/UserSwitcher";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,7 +82,7 @@ export default function AttendancePage() {
 
       {isStudent && (
         <div className="max-w-md mx-auto">
-          <QRScanner />
+          <QRScannerSimple />
         </div>
       )}
     </div>

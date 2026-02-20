@@ -9,7 +9,7 @@ import { BookOpen, Calendar, FileText, TrendingUp, Bell, Plus } from "lucide-rea
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { QRGenerator } from "@/components/QRGenerator";
-import { QRScanner } from "@/components/QRScanner";
+import { QRScannerSimple } from "@/components/QRScannerSimple";
 import { AttendanceLiveView } from "@/components/AttendanceLiveView";
 import { UserSwitcher } from "@/components/UserSwitcher";
 import { getCurrentUser, type MockUser } from "@/lib/mock-users";
@@ -112,7 +112,7 @@ export default function DashboardPage() {
             </>
           )}
 
-          {isStudent && <QRScanner />}
+          {isStudent && <QRScannerSimple />}
         </div>
       </div>
     </div>

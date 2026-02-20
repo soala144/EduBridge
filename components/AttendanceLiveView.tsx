@@ -137,14 +137,7 @@ export function AttendanceLiveView({
             </div>
           </div>
           <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleSimulateDummies}
-              className="border-blue-300 text-blue-700 hover:bg-blue-100"
-            >
-              Simulate 8 Dummy Students
-            </Button>
+            
             <Button
               size="sm"
               variant="outline"
