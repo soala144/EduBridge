@@ -20,32 +20,10 @@ export async function POST(request: NextRequest) {
 
     console.log("Creating attendance with sessionKey:", sessionKey);
 
-    // Check if attendance already exists
-    const existing = await prisma.attendance.findFirst({
-      where: {
-        sessionKey,
-        userEmail,
-      },
-    });
-
     let attendance;
 
-    if (existing) {
-      // Update existing attendance
-      attendance = await prisma.attendance.update({
-        where: {
-          id: existing.id,
-        },
-        data: {
-          present: true,
-          markedAt: new Date(),
-          userName,
-          matNumber: matNumber || null,
-        },
-      });
-      console.log("Attendance updated:", attendance.id);
-    } else {
-      // Create new attendance
+    try {
+      // Try to create new attendance
       attendance = await prisma.attendance.create({
         data: {
           courseCode,
@@ -58,6 +36,40 @@ export async function POST(request: NextRequest) {
         },
       });
       console.log("Attendance created:", attendance.id);
+    } catch (createError: any) {
+      // If unique constraint violation, find and update the existing record
+      if (createError.code === "P2002") {
+        console.log("Duplicate found, finding existing record...");
+        
+        // Find all records with this sessionKey and userEmail
+        const existingRecords = await prisma.attendance.findMany({
+          where: {
+            sessionKey,
+            userEmail,
+          },
+          take: 1,
+        });
+
+        if (existingRecords.length > 0) {
+          const existing = existingRecords[0];
+          attendance = await prisma.attendance.update({
+            where: {
+              id: existing.id,
+            },
+            data: {
+              present: true,
+              markedAt: new Date(),
+              userName,
+              matNumber: matNumber || null,
+            },
+          });
+          console.log("Attendance updated:", attendance.id);
+        } else {
+          throw new Error("Could not find existing record to update");
+        }
+      } else {
+        throw createError;
+      }
     }
 
     return NextResponse.json({ success: true, attendance });

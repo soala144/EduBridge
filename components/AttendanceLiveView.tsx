@@ -72,11 +72,22 @@ export function AttendanceLiveView({
       { userName: "Ibrahim Musa", userEmail: "student6@uni.ng", matNumber: "2020/123461" },
       { userName: "Blessing Okoro", userEmail: "student7@uni.ng", matNumber: "2020/123462" },
       { userName: "David Adeyemi", userEmail: "student8@uni.ng", matNumber: "2020/123463" },
+      { userName: "Chidinma Nwankwo", userEmail: "student9@uni.ng", matNumber: "2020/123464" },
+      { userName: "Emeka Obi", userEmail: "student10@uni.ng", matNumber: "2020/123465" },
+      { userName: "Fatima Abubakar", userEmail: "student11@uni.ng", matNumber: "2020/123466" },
+      { userName: "Oluwaseun Adebayo", userEmail: "student12@uni.ng", matNumber: "2020/123467" },
+      { userName: "Zainab Mohammed", userEmail: "student13@uni.ng", matNumber: "2020/123468" },
+      { userName: "Chukwuemeka Ike", userEmail: "student14@uni.ng", matNumber: "2020/123469" },
+      { userName: "Aisha Yusuf", userEmail: "student15@uni.ng", matNumber: "2020/123470" },
     ];
 
+    setLoading(true);
+    toast.info("Adding demo attendance data...");
+
     try {
+      let successCount = 0;
       for (const student of dummyStudents) {
-        await fetch("/api/attendance/mark", {
+        const response = await fetch("/api/attendance/mark", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -87,12 +98,15 @@ export function AttendanceLiveView({
             matNumber: student.matNumber,
           }),
         });
+        if (response.ok) successCount++;
       }
-      toast.success("Demo attendance added for 8 students!");
+      toast.success(`Demo attendance added for ${successCount} students!`);
       await fetchAttendees();
     } catch (error) {
-      toast.error("Failed to simulate attendance");
+      toast.error("Failed to add demo attendance");
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -141,7 +155,15 @@ export function AttendanceLiveView({
             </div>
           </div>
           <div className="flex gap-2">
-            
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleSimulateDummies}
+              className="border-blue-300 text-blue-700 hover:bg-blue-100"
+              disabled={loading}
+            >
+              Add Demo Data
+            </Button>
             <Button
               size="sm"
               variant="outline"
